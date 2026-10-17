@@ -3,7 +3,7 @@ import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https:/
 import { collection, doc, getDocs, onSnapshot, query, where, writeBatch, updateDoc, addDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const $ = id => document.getElementById(id);
 const wa = (tel, msg) => `https://wa.me/55${tel.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
-let servicos = [], unsubs = [], primeira = true, ultimoRel = [];
+let servicos = [], unsubs = [], primeira = true, ultimoRel = [], selBlq = new Set(), ocup = new Set();
 
 $("entrar").onclick = () => signInWithEmailAndPassword(auth, $("email").value, $("senha").value).catch(() => alert("E-mail ou senha incorretos."));
 $("sair").onclick = () => signOut(auth);
@@ -38,7 +38,7 @@ $("cPadrao").onclick = async () => { for (const s of SERVICOS_PADRAO) { const { 
 
 function iniciar() {
   const opts = slotsDoDia().map(h => `<option>${h}</option>`).join("");
-  $("blqHora").innerHTML = opts; $("mHora").innerHTML = opts;
+  $("mHora").innerHTML = opts;
   $("dia").value ||= hoje(); $("rDia").value ||= hoje(); $("rMes").value ||= hoje().slice(0, 7);
   const link = location.href.replace("admin.html", "").split("?")[0];
   $("lnk").textContent = link; $("qr").src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(link);
@@ -48,7 +48,7 @@ $("dia").onchange = escutarDia;
 
 function beep() { try { const c = new AudioContext(), o = c.createOscillator(); o.connect(c.destination); o.frequency.value = 880; o.start(); o.stop(c.currentTime + .25); } catch {} }
 function escutarDia() {
-  unsubs.forEach(u => u()); unsubs = []; primeira = true; const d = $("dia").value;
+  unsubs.forEach(u => u()); unsubs = []; primeira = true; selBlq.clear(); ocup = new Set(); desenharBlq(); const d = $("dia").value;
   unsubs.push(onSnapshot(query(collection(db, "agendamentos"), where("data", "==", d)), snap => {
     if (!primeira && snap.docChanges().some(c => c.type === "added")) beep(); primeira = false;
     const l = snap.docs.map(x => ({ id: x.id, ...x.data() })).sort((a, b) => a.hora.localeCompare(b.hora));
@@ -59,6 +59,9 @@ function escutarDia() {
     ${["pendente", "confirmado"].includes(a.status) ? `<select class="mini-sel" data-sel="${a.id}"><option value="">Corte feito…</option>${servicos.map(v => `<option value="${v.id}" ${v.id === a.servicoId ? "selected" : ""}>${v.nome} ${brl(v.preco)}</option>`).join("")}</select><button class="btn mini" data-s="concluido" data-id="${a.id}">Concluir</button><button class="btn mini sec" data-s="faltou" data-id="${a.id}">Faltou</button><button class="btn mini perigo" data-s="cancelado" data-id="${a.id}">Cancelar</button>` : ""}
     </div></div>`).join("") || `<p class="msg">Nenhum agendamento neste dia.</p>`;
     window._dia = l;
+  }));
+  unsubs.push(onSnapshot(query(collection(db, "ocupados"), where("data", "==", d)), snap => {
+    ocup = new Set(snap.docs.map(x => x.data().hora)); ocup.forEach(h => selBlq.delete(h)); desenharBlq();
   }));
   unsubs.push(onSnapshot(query(collection(db, "ocupados"), where("data", "==", d), where("bloqueio", "==", true)), snap => {
     $("bloqueios").innerHTML = snap.docs.map(x => `<div class="row"><span>Bloqueado: ${x.data().hora}</span><button class="btn mini sec" data-unb="${x.id}">Liberar</button></div>`).join("");
@@ -75,7 +78,24 @@ $("lista").onclick = async e => {
   } else await updateDoc(doc(db, "agendamentos", id), { status: s });
 };
 $("bloqueios").onclick = e => { if (e.target.dataset.unb) deleteDoc(doc(db, "ocupados", e.target.dataset.unb)); };
-$("blq").onclick = async () => { const d = $("dia").value, h = $("blqHora").value; try { await setDoc(doc(db, "ocupados", `${d}_${h}`), { data: d, hora: h, bloqueio: true }); } catch { alert("Horário já ocupado."); } };
+function desenharBlq() {
+  $("blqHoras").innerHTML = slotsDoDia().map(h => `<button class="hora${selBlq.has(h) ? " sel" : ""}" data-h="${h}" ${ocup.has(h) ? "disabled" : ""}>${h}</button>`).join("");
+}
+$("blqHoras").onclick = e => {
+  const b = e.target.closest(".hora"); if (!b || b.disabled) return;
+  const h = b.dataset.h; selBlq.has(h) ? selBlq.delete(h) : selBlq.add(h); b.classList.toggle("sel");
+};
+$("blqTodos").onclick = () => { slotsDoDia().filter(h => !ocup.has(h)).forEach(h => selBlq.add(h)); desenharBlq(); };
+$("blqLimpar").onclick = () => { selBlq.clear(); desenharBlq(); };
+$("blq").onclick = async () => {
+  if (!selBlq.size) return alert("Selecione ao menos um horário.");
+  const d = $("dia").value;
+  try {
+    const b = writeBatch(db);
+    selBlq.forEach(h => b.set(doc(db, "ocupados", `${d}_${h}`), { data: d, hora: h, bloqueio: true }));
+    await b.commit(); selBlq.clear(); desenharBlq();
+  } catch { alert("Algum horário selecionado acabou de ser ocupado. Confira a lista e tente de novo."); }
+};
 $("mSalvar").onclick = async () => {
   const s = servicos.find(x => x.id === $("mServ").value), d = $("dia").value, h = $("mHora").value;
   if (!$("mNome").value) return alert("Informe o nome.");

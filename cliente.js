@@ -41,11 +41,11 @@ async function carregarHoras() {
   $("horas").innerHTML = `<p class="msg">Carregando…</p>`;
   const q = await getDocs(query(collection(db, "ocupados"), where("data", "==", S.data)));
   const oc = new Set(q.docs.map(d => d.data().hora)), agora = new Date();
-  $("horas").innerHTML = slotsDoDia().map(hr => {
-    let ok = !oc.has(hr);
-    if (S.data === hoje() && toMin(hr) <= agora.getHours() * 60 + agora.getMinutes()) ok = false;
-    return `<button class="hora${S.hora === hr ? " sel" : ""}" data-h="${hr}" ${ok ? "" : "disabled"}>${hr}</button>`;
-  }).join("");
+  const livres = slotsDoDia().filter(hr => !oc.has(hr) && !(S.data === hoje() && toMin(hr) <= agora.getHours() * 60 + agora.getMinutes()));
+  if (S.hora && !livres.includes(S.hora)) { S.hora = ""; $("s4").classList.add("hidden"); }
+  $("horas").innerHTML = livres.length
+    ? livres.map(hr => `<button class="hora${S.hora === hr ? " sel" : ""}" data-h="${hr}">${hr}</button>`).join("")
+    : `<p class="msg">Sem horários disponíveis neste dia. Escolha outra data.</p>`;
 }
 carregarHoras(); atualizar();
 $("horas").onclick = e => {

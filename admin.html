@@ -17,7 +17,9 @@
 <input type="date" id="dia">
 <div id="lista"></div>
 <h3>Bloquear horário</h3>
-<div style="display:flex;gap:8px;margin-top:8px"><select id="blqHora"></select><button class="btn" id="blq">Bloquear</button></div>
+<p class="msg">Toque nos horários que quer bloquear e depois confirme.</p>
+<div id="blqHoras" class="horas"></div>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" id="blq">Bloquear selecionados</button><button class="btn sec" id="blqTodos">Selecionar todos livres</button><button class="btn sec" id="blqLimpar">Limpar</button></div>
 <div id="bloqueios" style="margin-top:10px"></div>
 <h3 style="margin-top:22px">Agendar manualmente</h3>
 <div style="margin-top:8px"><input id="mNome" placeholder="Nome do cliente"><input id="mTel" placeholder="Telefone com DDD" inputmode="tel">
