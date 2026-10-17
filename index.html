@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agende seu horário</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="style.css"></head>
+<body><div class="poste"></div>
+<div class="topo"><div class="in"><b id="marca"></b>
+<nav><a href="index.html" aria-current="page">Agendar</a><a href="catalogo.html">Catálogo</a></nav></div></div>
+<header><h1>Agende seu horário</h1><p>Reserve em poucos toques. O corte você pode escolher agora ou na hora.</p></header>
+<main class="passos">
+<section id="agendar"><h2>Escolha o dia</h2><input type="date" id="data"></section>
+<section><h2>Escolha o horário</h2><div id="horas" class="horas"></div></section>
+<section id="s4" class="hidden"><h2>Seus dados</h2>
+<input id="nomeCli" placeholder="Seu nome" autocomplete="name">
+<input id="tel" placeholder="(82) 99999-9999" inputmode="tel" autocomplete="tel">
+<button type="button" class="btn sec" id="abrirCortes" aria-expanded="false" style="width:100%;margin-bottom:10px">Escolher o corte (opcional)</button>
+<div id="painelCortes" class="painel hidden">
+<small class="msg">Toque para escolher. Toque de novo para desmarcar e decidir na hora.</small>
+<div id="servicos" class="grid"></div>
+<a href="catalogo.html" class="msg">Ver o catálogo completo</a></div>
+<div class="resumo" id="resumo"></div>
+<button class="btn zap" id="enviar">Reservar e enviar pelo WhatsApp</button></section>
+</main>
+<script type="module" src="cliente.js"></script></body></html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel da barbearia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
+<link rel="stylesheet" href="style.css"></head>
+<body><div class="poste"></div>
+<main style="padding-top:20px">
+<div id="login"><h1>Painel</h1><p class="msg">Entre com o e-mail criado no Firebase Authentication.</p>
+<input id="email" type="email" placeholder="E-mail"><input id="senha" type="password" placeholder="Senha">
+<button class="btn" id="entrar">Entrar</button></div>
+<div id="app" class="hidden">
+<div style="display:flex;justify-content:space-between;align-items:center"><h1>Painel</h1><button class="btn sec mini" id="sair">Sair</button></div>
+<div class="tabs" id="tabs"><button data-t="agenda" class="on">Agenda</button><button data-t="catalogo">Catálogo</button><button data-t="rel">Relatórios</button><button data-t="clientes">Clientes</button><button data-t="link">Link e QR</button></div>
+
+<section id="t-agenda">
+<input type="date" id="dia">
+<div id="lista"></div>
+<h3>Bloquear horário</h3>
+<div style="display:flex;gap:8px;margin-top:8px"><select id="blqHora"></select><button class="btn" id="blq">Bloquear</button></div>
+<div id="bloqueios" style="margin-top:10px"></div>
+<h3 style="margin-top:22px">Agendar manualmente</h3>
+<div style="margin-top:8px"><input id="mNome" placeholder="Nome do cliente"><input id="mTel" placeholder="Telefone com DDD" inputmode="tel">
+<select id="mServ"></select><select id="mHora"></select><button class="btn" id="mSalvar">Salvar agendamento</button></div>
+</section>
+
+<section id="t-catalogo" class="hidden">
+<div id="catLista"></div>
+<h3>Novo serviço</h3><div style="margin-top:8px"><input id="cNome" placeholder="Nome"><input id="cDesc" placeholder="Descrição">
+<input id="cPreco" type="number" placeholder="Preço (R$)"><input id="cDur" type="number" step="30" placeholder="Duração (min, múltiplo de 30)"><input id="cFoto" placeholder="URL da foto (opcional)">
+<button class="btn" id="cSalvar">Adicionar serviço</button> <button class="btn sec" id="cPadrao">Carregar serviços padrão</button></div>
+</section>
+
+<section id="t-rel" class="hidden">
+<div style="display:flex;gap:8px"><input type="date" id="rDia"><input type="month" id="rMes"></div>
+<div class="tabs"><button id="rBtnDia" class="on">Diário</button><button id="rBtnMes">Mensal</button><button id="rCsv">Exportar CSV</button></div>
+<div id="relOut"></div>
+</section>
+
+<section id="t-clientes" class="hidden"><div id="cliOut"></div></section>
+
+<section id="t-link" class="hidden"><div class="resumo"><b>Link para o cliente agendar</b><br><span id="lnk"></span></div>
+<img id="qr" alt="QR Code do link" width="220" height="220" style="background:#fff;padding:8px;border-radius:8px"></section>
+</div></main>
+<script type="module" src="admin.js"></script></body></html>
